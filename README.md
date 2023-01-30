@@ -1,47 +1,141 @@
-# Getting Started with Create React App
+# How to add redux-toolkit to the app
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+-   add the dependencie
+    -   npm install @reduxjs/toolkit react-redux
+-   make a store for all the reducers
 
-## Available Scripts
+    -   make a directory in the src/redux/store.ts
+    -   add the following to that file
 
-In the project directory, you can run:
+            import { configureStore } from '@reduxjs/toolkit'
 
-### `npm start`
+            export const store = configureStore({
+              reducer: {},
+            })
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+            // Infer the `RootState` and `AppDispatch` types from the store itself
+            export type RootState = ReturnType<typeof store.getState>
+            // Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
+            export type AppDispatch = typeof store.dispatch
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+-   provide redux store to react
 
-### `npm test`
+    -   now have to wrap the entire app with the redux coverings
+    -   add the following to index.tsx file
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+            // redux imports
+            import { Provider } from 'react-redux';
+            import { store } from './redux/store';
 
-### `npm run build`
+            // change in the wrapper
+            <React.StrictMode>
+              <Provider store={store}>
+                <App />
+              </Provider>
+            </React.StrictMode>
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+-   add the slicer [state, reducer, actions]
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+    -   make a file named counter.ts in the src/redux/features/counter.ts
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+            import { createSlice } from '@reduxjs/toolkit'
+            import type { PayloadAction } from '@reduxjs/toolkit'
 
-### `npm run eject`
+            export interface CounterState {
+              count: number
+            }
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+            const initialState: CounterState = {
+              count: 0,
+            }
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+            export const counterSlice = createSlice({
+              name: 'counter',
+              initialState,
+              reducers: {
+                increment: (state) => {
+                  state.count += 1
+                },
+                decrement: (state) => {
+                  state.count -= 1
+                },
+                incrementByAmount: (state, action: PayloadAction<number>) => {
+                  state.count += action.payload
+                },
+              },
+            })
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+            // Action creators are generated for each case reducer function
+            export const { increment, decrement, incrementByAmount } = counterSlice.actions
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+            export default counterSlice.reducer
 
-## Learn More
+-   Add slice reducer to store
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+    -   in the src/redux/store.ts we have to add the slicer reducer
+    -   importing the reducer from the correct dir and adding the reducer in the proper naming and object
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-# DDoS-Detector
+            import { configureStore } from '@reduxjs/toolkit'
+            import counterReducer from './features/counter'
+
+            export const store = configureStore({
+              reducer: {
+                counter: counterReducer,
+              },
+            })
+
+            // Infer the `RootState` and `AppDispatch` types from the store itself
+            export type RootState = ReturnType<typeof store.getState>
+            // Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
+            export type AppDispatch = typeof store.dispatch
+
+-   Modifying to the the App.tsx
+
+    -   importing the useSelector and useDispathc hooks
+    -   importing the actions and the type def for the state
+    -   initiating the state (count) by the useSelector
+    -   initiate the dispatch function as well
+    -   the state value is seen at **{count}**
+    -   to access the actions of the dispatch functions are done as bellow
+
+        [onClick={()=>dispatch(increment())}]
+
+            import { Button, Container, Typography } from '@mui/material';
+            import { useDispatch, useSelector } from 'react-redux';
+            import { decrement, increment, incrementByAmount } from './redux/features/counter';
+            import { RootState } from './redux/store';
+
+            function App() {
+
+              const { count } = useSelector((state: RootState) => state.counter);
+              const dispatch = useDispatch();
+
+              return (
+                <Container sx={styles.container}>
+                  <Typography variant='h1'>Store</Typography>
+                  <Typography variant='h4'>Counter : {count}</Typography>
+                  <Container style={{marginTop: 20, display: 'flex', justifyContent: 'space-evenly'}}>
+                    <Button variant="contained" onClick={()=>dispatch(increment())}>Increment</Button>
+                    <Button variant="outlined" onClick={()=>dispatch(decrement())}>Decrement</Button>
+                    <Button variant="text" onClick={()=>dispatch(incrementByAmount(33))}>Increment by 33</Button>
+                  </Container>
+                </Container>
+              );
+            }
+
+            const styles = {
+              container: {
+                bgcolor: 'tomato',
+                height: '100vh',
+                textAlign: 'center',
+                p: 1,
+              },
+            }
+
+            export default App;
+
+---
+
+---
+
+---

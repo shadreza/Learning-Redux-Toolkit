@@ -1,6 +1,6 @@
 import { Button, Container, Typography } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { decrement, increment, incrementByAmount } from './redux/counter';
+import { decrement, increment, incrementByAmount } from './redux/features/counter';
 import { RootState } from './redux/store';
 
 function App() {
